@@ -1,0 +1,82 @@
+{
+  "de": {
+    "group.general.name":          "Allgemein",
+    "group.general.description":   "Allgemeine Plugin-Einstellungen",
+    "group.plant.description":     "FYTA-Pflanze in: {garden}",
+
+    "settings.email.label":        "FYTA-Konto E-Mail-Adresse",
+    "settings.email.description":  "Hinterlege hier die E-Mail-Adresse deines FYTA-Kontos für den Login.",
+    "settings.password.label":     "FYTA-Konto Passwort",
+    "settings.password.description": "Hinterlege hier das Passwort deines FYTA-Kontos für den Login.",
+    "settings.connected.label":    "FYTA API verbunden?",
+    "settings.connected.description": "Zeigt an, ob die FYTA API erfolgreich verbunden ist.",
+    "settings.connected.yes":      "Verbunden",
+    "settings.connected.no":       "Nicht verbunden",
+    "settings.interval.label":     "Synchronisationsintervall",
+    "settings.interval.description": "Stelle ein, wie häufig die HCU mit der FYTA API synchronisiert werden soll (in Minuten).",
+    "settings.autoimport.label":   "Neue FYTA-Pflanzen automatisch importieren",
+    "settings.autoimport.description": "Lege fest, ob neu angelegte FYTA-Pflanzen automatisch mit der nächsten Synchronisation in die HCU importiert werden sollen.",
+    "settings.reinclude.label":    "In der HCU gelöschte Geräte neu inkludieren?",
+    "settings.reinclude.description": "Lege fest, ob in der HCU entfernte Geräte beim Synchronisieren neu erstellt werden sollen.",
+
+    "plant.name.label":            "Pflanzenname",
+    "plant.name.description":      "Name der Pflanze aus der FYTA-App.",
+    "plant.deviceid.label":        "Verknüpfte HCU-Geräte-ID",
+    "plant.deviceid.description":  "Die ID des HCU-Geräts, das mit dieser Pflanze verknüpft ist.",
+    "plant.deviceid.none":         "Kein Gerät erstellt",
+    "plant.sensor.label":          "Sensor anlegen?",
+    "plant.sensor.description":    "Aktiviere diese Option, um für die Pflanze ein Wetterstation-Gerät in der HCU zu erstellen (Temperatur, Helligkeit, Bodenfeuchte, Fruchtbarkeit).",
+
+    "notification.api.unavailable.title":   "FYTA API nicht erreichbar",
+    "notification.api.unavailable.message": "Die Verbindung zur FYTA API konnte nicht hergestellt werden. Bitte prüfe deine Internetverbindung und FYTA-Zugangsdaten.",
+    
+    "group.info.name":                      "Informationen zum Plugin",
+    "group.info.description":               "Weiterführende Informationen zum Plugin SmartMatix FYTA Connector",
+    "settings.copyrightinfo.label":         "Hinweise zum Urheberrecht",
+    "settings.copyrightinfo.description":   "Die Entwickler dieses Plugins stehen in keiner Verbindung zu FYTA und beanspruchen keine Rechte an dem Markenzeichen \"FYTA\" oder anderen mit deren Produkten verbundenen Marken.",
+    "settings.copyrightinfo.linktitle":     "Zur Website von FYTA",
+    "settings.pluginInfo.label":            "Hinweise zum Plugin",
+    "settings.pluginInfo.description":      "Besuche regelmäßig unsere GitHub-Seite, um immer das aktuellste Plugin zu verwenden.",
+    "settings.pluginInfo.linktitle":        "Zur GitHub-Seite von SmartMatix FYTA Connector"
+  },
+  "en": {
+    "group.general.name":          "General",
+    "group.general.description":   "General Plugin Settings",
+    "group.plant.description":     "FYTA Plant in: {garden}",
+
+    "settings.email.label":        "FYTA Account E-Mail Address",
+    "settings.email.description":  "Enter the E-Mail Address of your FYTA Account here.",
+    "settings.password.label":     "FYTA Account Password",
+    "settings.password.description": "Enter the Password of your FYTA Account here.",
+    "settings.connected.label":    "FYTA API connected?",
+    "settings.connected.description": "Shows whether the FYTA API is successfully connected.",
+    "settings.connected.yes":      "Connected",
+    "settings.connected.no":       "Not connected",
+    "settings.interval.label":     "Sync interval",
+    "settings.interval.description": "Set how often the HCU should sync with the FYTA API (in Minutes).",
+    "settings.autoimport.label":   "Automatically import new FYTA plants",
+    "settings.autoimport.description": "Define whether newly created FYTA Plants should be automatically imported into the HCU at the next Sync.",
+    "settings.reinclude.label":    "Re-include Devices deleted from HCU?",
+    "settings.reinclude.description": "Define whether Devices removed from the HCU should be re-created on the next sync.",
+
+    "plant.name.label":            "Plant Name",
+    "plant.name.description":      "Name of the Plant from the FYTA App.",
+    "plant.deviceid.label":        "Linked HCU Device ID",
+    "plant.deviceid.description":  "The ID of the HCU Device linked to this Plant.",
+    "plant.deviceid.none":         "No Device created",
+    "plant.sensor.label":          "Create Sensor?",
+    "plant.sensor.description":    "Enable this option to create a Climate Sensor Device in the HCU for this Plant (Temperature, Illumination, Soil Moisture, Fertility).",
+
+    "notification.api.unavailable.title":   "FYTA API unavailable",
+    "notification.api.unavailable.message": "The Connection to the FYTA API could not be established. Please check your Internet Connection and FYTA Credentials.",
+
+    "group.info.name":                      "Additional Information",
+    "group.info.description":               "Some additional Information for the Plugin SmartMatix FYTA Connector",
+    "settings.copyrightinfo.label":         "Copyright",
+    "settings.copyrightinfo.description":   "The developers of this plugin are not affiliated with FYTA and do not claim any rights to the \"FYTA\" trademark or any other trademarks associated with its products.",
+    "settings.copyrightinfo.linktitle":     "Open the FYTA Website",
+    "settings.pluginInfo.label":            "Stay Up-To-Date with the Plugin",
+    "settings.pluginInfo.description":      "Visit our GitHub page regularly to always use the latest version of the plugin.",
+    "settings.pluginInfo.linktitle":        "To the GitHub-Page of the SmartMatix FYTA Connector"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "name": "smartmatix-fyta-connector",
+  "version": "1.0.0",
+  "description": "Ein Plugin, um deine FYTA Geräte zur HCU hinzuzufügen.",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "LOG_LEVEL=info node src/index.js"
+  },
+  "keywords": [
+    "pflanzen",
+    "plants",
+    "fyta",
+    "fyta beam",
+    "fyta terra",
+    "fyta sphere",
+    "fyta mini",
+    "fyta hub",
+    "pflanzensensor",
+    "smart plants",
+    "connect-api",
+    "smarthome"
+  ],
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "fs": "^0.0.1-security",
+    "uuid": "^11.1.0",
+    "ws": "^8.19.0"
+  }
+}

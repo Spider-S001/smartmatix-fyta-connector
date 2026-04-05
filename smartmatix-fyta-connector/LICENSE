@@ -1,0 +1,63 @@
+SmartMatix FYTA Connector – Source Available License
+Copyright (c) 2026 Kevin Schipper
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to use,
+copy, modify, and distribute modified versions of the Software, subject to the
+following conditions:
+
+1. ATTRIBUTION
+   All copies or substantial portions of the Software, whether modified or
+   unmodified, must include this copyright notice and the following attribution
+   in a visible location (e.g. documentation, UI, or source header):
+
+       Based on SmartMatix FYTA Connector by Kevin Schipper
+       https://github.com/Spider-S001/smartmatix-fyta-connector
+
+2. MODIFICATIONS REQUIRED FOR REDISTRIBUTION
+   Redistribution of the Software is only permitted in modified form.
+   Unmodified redistribution – i.e. copying and publishing or distributing
+   the Software without any substantial changes to the source code – is
+   prohibited without prior written permission from the copyright holder.
+
+3. NO COMMERCIAL RESALE
+   The Software, in whole or in part, whether modified or unmodified, may not
+   be sold, sublicensed, or otherwise commercially redistributed as a standalone
+   product or as part of a product whose primary value is derived from this
+   Software, without prior written permission from the copyright holder.
+
+   This restriction does not prohibit:
+   - Using the Software as part of a private or internal installation
+   - Charging for services (e.g. setup, consulting, integration) that make use
+     of the Software, provided the Software itself is not the primary product
+     being sold
+
+4. NO WARRANTY
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+   THE SOFTWARE.
+
+5. GOVERNING LAW
+   This license shall be governed by and construed in accordance with the laws
+   of the Federal Republic of Germany, without regard to its conflict of law
+   provisions.
+
+---
+
+For permissions beyond the scope of this license, contact:
+Kevin Schipper – plugin@smartmatix.de
+
+---
+
+THIRD-PARTY COMPONENTS
+
+This software includes third-party open source components. See the file
+THIRD_PARTY_LICENSES.md for the full text of the applicable licenses.
+
+This software is based in part on the Homematic IP Connect API examples
+by eQ-3 AG, licensed under the Apache License 2.0.
+Homematic IP is a trademark of eQ-3 AG.
