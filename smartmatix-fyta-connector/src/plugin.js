@@ -28,6 +28,8 @@ const configStore         = require('./configStore');
 const devicesStore        = require('./devicesStore');
 const fyta                = require('./fyta.js');
 const { t }               = require('./localization');
+const { HcuPluginUpdater } = require('./hcu-plugin-updater');
+const backup              = require('./backup-plugin-data');
 
 
 // Reconnect-Einstellungen
@@ -69,6 +71,24 @@ class Plugin {
     this._fytaSyncTimer  = null;
     this._stopping       = false;
     this._lang           = 'de'; // Wird aus CONFIG_TEMPLATE_REQUEST aktualisiert
+
+    // Update-Checker (hcu-plugin-updater) – wird in _onOpen() initialisiert,
+    // sobald die WebSocket-Verbindung steht.
+    this._updater = null;
+
+    // Backup-/Restore-Manager (backup-plugin-data).
+    // pluginId wird automatisch aus process.argv gelesen, version aus package.json.
+    this._backupManager = backup.create();
+
+    // Hostname der HCU für die in den Backup-/Restore-Links verwendeten URLs.
+    // Auf der HCU steht die SGTIN unter /SGTIN bereit → hcu1-XXXX.local,
+    // ansonsten (lokale Entwicklung) Fallback auf localhost.
+    try {
+      const _sgtin = fs.readFileSync('/SGTIN', 'utf8').trim();
+      this._backupHost = `hcu1-${_sgtin.slice(-4)}.local`;
+    } catch {
+      this._backupHost = 'localhost';
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -85,6 +105,8 @@ class Plugin {
     this._stopping = true;
     this._clearReconnect();
     this._stopFytaSync();
+    // Automatischen Update-Check beenden
+    this._updater?.stopSchedule();
     if (this._ws) {
       this._ws.terminate();
       this._ws = null;
@@ -118,6 +140,16 @@ class Plugin {
   _onOpen() {
     log.info('WebSocket verbunden.');
     this._reconnectDelay = RECONNECT_BASE_MS; // Reset nach Erfolg
+
+    // Update-Checker starten (täglich, sofort beim ersten Verbindungsaufbau).
+    // Nur einmalig initialisieren – bei Reconnects bleibt der Scheduler bestehen.
+    if (!this._updater) {
+      this._updater = new HcuPluginUpdater(this._ws, this.pluginId);
+      this._updater.startSchedule(
+        'https://github.com/Spider-S001/smartmatix-fyta-connector',
+        'SmartMatix FYTA Connector'
+      );
+    }
 
     // Pflicht bei Verbindungsaufbau: Plugin als READY melden
     this._sendPluginReady(uuidv4());
@@ -337,6 +369,35 @@ class Plugin {
   _handleConfigUpdateRequest(message) {
     const { properties } = message.body ?? {};
     log.info('CONFIG_UPDATE_REQUEST empfangen');
+
+    // --- Backup / Restore ---
+    // Die zusammengefasste Gruppe nutzt ein Dropdown (backup_restore_action)
+    // mit den lokalisierten Werten "Deaktiviert" / "Backup starten" /
+    // "Wiederherstellung starten". Der gewählte Anzeigetext wird gegen die
+    // Lokalisierung gematcht und in die backupMode/restoreMode-Felder übersetzt,
+    // die der backupManager erwartet.
+    const lang        = this._lang;
+    const actionValue = properties?.backup_restore_action;
+    const backupFields = {};
+    if (actionValue !== undefined && actionValue !== null) {
+      if (actionValue === t(lang, 'settings.backup_restore.action.backup')) {
+        backupFields.backupMode = true;
+      } else if (actionValue === t(lang, 'settings.backup_restore.action.restore')) {
+        backupFields.restoreMode = true;
+      }
+    }
+    if (this._backupManager.handleConfigUpdate(backupFields)) {
+      // Update wurde vom Backup-Manager verarbeitet – Einstellungsseite neu
+      // pushen (damit Token/Link erscheinen) und Antwort sofort senden.
+      this._pushConfigTemplate();
+      this._send({
+        id:       message.id,
+        pluginId: this.pluginId,
+        type:     'CONFIG_UPDATE_RESPONSE',
+        body:     { status: 'APPLIED' },
+      });
+      return;
+    }
  
     // Properties kommen als flaches Objekt: { reincludeDevices: 'wert', ... }
     const reincludeDevices = properties?.reincludeDevices;
@@ -542,6 +603,42 @@ class Plugin {
       };
     });
 
+    // --- Backup & Restore (zu EINER Gruppe zusammengefasst) ---
+    const backupConfigGroups = this._backupManager.getConfigGroups();
+    const backupHost = this._backupHost;
+    const resolveDesc = (desc) => {
+      const raw = (typeof desc === 'object' ? desc?.[lang] : desc) ?? '';
+      return raw
+        .replace(/\{\{hostname\}\}/g, backupHost)
+        .replace(/\{\{lang\}\}/g, lang ?? 'en');
+    };
+
+    // Aktiven Modus ermitteln: liefert getConfigGroups() für eine Gruppe
+    // andere Felder als die Standard-Checkbox, läuft dieser Modus gerade.
+    const backupGroup   = backupConfigGroups[0];
+    const restoreGroup  = backupConfigGroups[1];
+    const backupActive  = backupGroup.fields.some(f => f.type !== 'BOOLEAN');
+    const restoreActive = restoreGroup.fields.some(f => f.type !== 'BOOLEAN');
+
+    // Beschreibung der zusammengefassten Gruppe je nach Zustand:
+    //   - Backup aktiv  > Backup-Schritt-2-Beschreibung
+    //   - Restore aktiv > Restore-Schritt-2-Beschreibung
+    //   - sonst         > allgemeine Auswahl-Beschreibung aus localization.json
+    let combinedDesc;
+    if (backupActive) {
+      combinedDesc = resolveDesc(backupGroup.description);
+    } else if (restoreActive) {
+      combinedDesc = resolveDesc(restoreGroup.description);
+    } else {
+      combinedDesc = t(lang, 'group.backup_restore.description');
+    }
+
+    groups.backup_restore = {
+      friendlyName: t(lang, 'group.backup_restore.name'),
+      description:  combinedDesc,
+      order:        997,
+    };
+
     return groups;
   }
 
@@ -677,6 +774,72 @@ class Plugin {
         currentValue: plant.autoImportEnabled !== false ? 'true' : 'false',
       };
     });
+
+    // --- Backup & Restore (eine Gruppe, Dropdown-Steuerung) ---
+    const backupConfigGroups = this._backupManager.getConfigGroups();
+    const backupHost = this._backupHost;
+    const safeLang   = lang || 'de';
+
+    const backupGroup   = backupConfigGroups[0];
+    const restoreGroup  = backupConfigGroups[1];
+    const backupActive  = backupGroup.fields.some(f => f.type !== 'BOOLEAN');
+    const restoreActive = restoreGroup.fields.some(f => f.type !== 'BOOLEAN');
+
+    if (backupActive || restoreActive) {
+      // Ein Modus läuft: die aktiven Felder (Token, Link) dieser Gruppe anzeigen.
+      const activeFields = backupActive ? backupGroup.fields : restoreGroup.fields;
+
+      activeFields.forEach((field, i) => {
+        if (field.type === 'LABEL') return;
+
+        if (field.type === 'LINK') {
+          const resolvedUrl = (field.url ?? '')
+            .replace('{{hostname}}', backupHost)
+            .replace('{{lang}}', safeLang);
+          properties[`backup_restore_${field.id}`] = {
+            friendlyName: field.buttonLabel?.[safeLang] ?? field.label?.[safeLang] ?? '',
+            description:  field.label?.[safeLang] ?? '',
+            dataType:     'WEBLINK',
+            groupId:      'backup_restore',
+            order:        i + 2,
+            defaultValue: field.buttonLabel?.[safeLang] ?? field.label?.[safeLang] ?? '',
+            currentValue: resolvedUrl,
+          };
+          return;
+        }
+
+        // STRING-Feld (z.B. Restore-Token, readOnly)
+        const resolvedValue = field.readOnly
+          ? (field.value ?? '').replace('{{hostname}}', backupHost).replace('{{lang}}', lang ?? 'en')
+          : (field.value ?? '');
+        properties[`backup_restore_${field.id}`] = {
+          friendlyName: field.label?.[safeLang] ?? '',
+          description:  '',
+          dataType:     'STRING',
+          groupId:      'backup_restore',
+          order:        i + 2,
+          defaultValue: resolvedValue,
+          currentValue: resolvedValue,
+          ...(field.readOnly ? { readOnly: true } : {}),
+        };
+      });
+    } else {
+      // Kein Modus aktiv: Dropdown zur Auswahl der Aktion.
+      properties.backup_restore_action = {
+        friendlyName: t(lang, 'settings.backup_restore.action.label'),
+        description:  t(lang, 'settings.backup_restore.action.description'),
+        dataType:     'ENUM',
+        groupId:      'backup_restore',
+        order:        1,
+        defaultValue: t(lang, 'settings.backup_restore.action.disabled'),
+        currentValue: t(lang, 'settings.backup_restore.action.disabled'),
+        values: [
+          t(lang, 'settings.backup_restore.action.disabled'),
+          t(lang, 'settings.backup_restore.action.backup'),
+          t(lang, 'settings.backup_restore.action.restore'),
+        ],
+      };
+    }
 
     return properties;
   }

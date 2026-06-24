@@ -37,7 +37,15 @@
     "settings.copyrightinfo.linktitle":     "Zur Website von FYTA",
     "settings.pluginInfo.label":            "Hinweise zum Plugin",
     "settings.pluginInfo.description":      "Besuche regelmäßig unsere GitHub-Seite, um immer das aktuellste Plugin zu verwenden.",
-    "settings.pluginInfo.linktitle":        "Zur GitHub-Seite von SmartMatix FYTA Connector"
+    "settings.pluginInfo.linktitle":        "Zur GitHub-Seite von SmartMatix FYTA Connector",
+
+    "group.backup_restore.name":                  "Backup & Wiederherstellung",
+    "group.backup_restore.description":           "Erstelle ein Backup deiner Plugin-Konfiguration oder stelle ein zuvor erstelltes Backup wieder her. Wähle eine Aktion aus und speichere die Einstellungen. Öffne die Einstellungen anschließend erneut, um den Download- bzw. Upload-Link zu erhalten.",
+    "settings.backup_restore.action.label":       "Aktion",
+    "settings.backup_restore.action.description": "Wähle 'Backup starten', um eine Sicherung herunterzuladen, oder 'Wiederherstellung starten', um ein Backup hochzuladen. Nach dem Speichern und erneuten Öffnen der Einstellungen erscheint hier der entsprechende Link.",
+    "settings.backup_restore.action.disabled":    "Deaktiviert",
+    "settings.backup_restore.action.backup":      "Backup starten",
+    "settings.backup_restore.action.restore":     "Wiederherstellung starten"
   },
   "en": {
     "group.general.name":          "General",
@@ -77,6 +85,14 @@
     "settings.copyrightinfo.linktitle":     "Open the FYTA Website",
     "settings.pluginInfo.label":            "Stay Up-To-Date with the Plugin",
     "settings.pluginInfo.description":      "Visit our GitHub page regularly to always use the latest version of the plugin.",
-    "settings.pluginInfo.linktitle":        "To the GitHub-Page of the SmartMatix FYTA Connector"
+    "settings.pluginInfo.linktitle":        "To the GitHub-Page of the SmartMatix FYTA Connector",
+
+    "group.backup_restore.name":                  "Backup & Restore",
+    "group.backup_restore.description":           "Create a backup of your plugin configuration or restore a previously created backup. Select an action and save the settings. Then reopen the settings to get the download or upload link.",
+    "settings.backup_restore.action.label":       "Action",
+    "settings.backup_restore.action.description": "Select 'Start backup' to download a backup, or 'Start restore' to upload a backup. After saving and reopening the settings, the corresponding link will appear here.",
+    "settings.backup_restore.action.disabled":    "Disabled",
+    "settings.backup_restore.action.backup":      "Start backup",
+    "settings.backup_restore.action.restore":     "Start restore"
   }
 }
