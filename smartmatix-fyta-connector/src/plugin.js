@@ -12,8 +12,8 @@
  * Verbindungsablauf (aus den offiziellen Node.js-Beispielen):
  *   1. WebSocket-Verbindung aufbauen
  *        Header: authtoken, plugin-id
- *   2. Bei „open": sofort PLUGIN_STATE_RESPONSE { READY } senden
- *   3. Auf PLUGIN_STATE_REQUEST > erneut PLUGIN_STATE_RESPONSE { READY }
+ *   2. Bei „open": sofort PLUGIN_STATE_RESPONSE { READY | CONFIG_REQUIRED } senden
+ *   3. Auf PLUGIN_STATE_REQUEST > erneut PLUGIN_STATE_RESPONSE { READY | CONFIG_REQUIRED }
  *   4. Auf DISCOVER_REQUEST     > DISCOVER_RESPONSE mit Geräteliste
  *   5. Auf CONTROL_REQUEST      > Gerät steuern + CONTROL_RESPONSE
  */
@@ -28,7 +28,6 @@ const configStore         = require('./configStore');
 const devicesStore        = require('./devicesStore');
 const fyta                = require('./fyta.js');
 const { t }               = require('./localization');
-const { HcuPluginUpdater } = require('./hcu-plugin-updater');
 const backup              = require('./backup-plugin-data');
 
 
@@ -72,10 +71,6 @@ class Plugin {
     this._stopping       = false;
     this._lang           = 'de'; // Wird aus CONFIG_TEMPLATE_REQUEST aktualisiert
 
-    // Update-Checker (hcu-plugin-updater) – wird in _onOpen() initialisiert,
-    // sobald die WebSocket-Verbindung steht.
-    this._updater = null;
-
     // Backup-/Restore-Manager (backup-plugin-data).
     // pluginId wird automatisch aus process.argv gelesen, version aus package.json.
     this._backupManager = backup.create();
@@ -105,8 +100,6 @@ class Plugin {
     this._stopping = true;
     this._clearReconnect();
     this._stopFytaSync();
-    // Automatischen Update-Check beenden
-    this._updater?.stopSchedule();
     if (this._ws) {
       this._ws.terminate();
       this._ws = null;
@@ -141,17 +134,8 @@ class Plugin {
     log.info('WebSocket verbunden.');
     this._reconnectDelay = RECONNECT_BASE_MS; // Reset nach Erfolg
 
-    // Update-Checker starten (täglich, sofort beim ersten Verbindungsaufbau).
-    // Nur einmalig initialisieren – bei Reconnects bleibt der Scheduler bestehen.
-    if (!this._updater) {
-      this._updater = new HcuPluginUpdater(this._ws, this.pluginId);
-      this._updater.startSchedule(
-        'https://github.com/Spider-S001/smartmatix-fyta-connector',
-        'SmartMatix FYTA Connector'
-      );
-    }
-
-    // Pflicht bei Verbindungsaufbau: Plugin als READY melden
+    // Pflicht bei Verbindungsaufbau: Plugin-Status melden
+    // (CONFIG_REQUIRED, solange keine FYTA-Zugangsdaten hinterlegt sind)
     this._sendPluginReady(uuidv4());
 
     // Zustände aller Geräte an HCU übertragen
@@ -238,19 +222,35 @@ class Plugin {
   }
 
   /**
-   * PLUGIN_STATE_RESPONSE – teilt der HCU mit, dass das Plugin betriebsbereit ist.
-   * Muss beim Verbindungsaufbau und auf jeden PLUGIN_STATE_REQUEST gesendet werden.
+   * Prüft, ob FYTA-Zugangsdaten hinterlegt sind und der letzte Login
+   * (nach Konfigurationsänderung) nicht fehlgeschlagen ist.
    */
-  _sendPluginReady(messageId) {
+  _isConfigured() {
+    const cfg = this._config ?? {};
+    return Boolean(cfg.fytaEMail && cfg.fytaPassword) && !this._loginFailed;
+  }
+
+  /**
+   * PLUGIN_STATE_RESPONSE – teilt der HCU den Plugin-Status mit.
+   * READY            > Zugangsdaten vorhanden
+   * CONFIG_REQUIRED  > Konfiguration (FYTA-Login) in der HCU-Oberfläche nötig
+   * Muss beim Verbindungsaufbau, auf jeden PLUGIN_STATE_REQUEST und bei jeder
+   * Statusänderung gesendet werden.
+   */
+  _sendPluginReady(messageId = uuidv4()) {
+    const status = this._isConfigured() ? 'READY' : 'CONFIG_REQUIRED';
+    if (status !== this._lastReadiness) {
+      log.info(`Plugin-Status: ${status}`);
+      this._lastReadiness = status;
+    }
     const message = {
       id:       messageId,
       pluginId: this.pluginId,
       type:     'PLUGIN_STATE_RESPONSE',
       body: {
-        pluginReadinessStatus: 'READY',
+        pluginReadinessStatus: status,
       },
     };
-    // log.info('Sende PLUGIN_STATE_RESPONSE { READY }');
     this._send(message);
   }
 
@@ -303,6 +303,12 @@ class Plugin {
    */
   _handleStatusRequest(message) {
     const { deviceId } = message.body ?? {};
+
+    if (!deviceId) {
+      log.warn('STATUS_REQUEST: deviceId fehlt – ignoriert.');
+      return;
+    }
+
     log.info(`STATUS_REQUEST für Geraet: ${deviceId}`);
 
     const device  = devices.getById(deviceId);
@@ -442,13 +448,17 @@ class Plugin {
         // Login + Sync sequenziell ausführen, danach Einstellungsseite aktualisieren.
         // Async hier bewusst fire-and-forget (kein await auf Handler-Ebene), damit
         // CONFIG_UPDATE_RESPONSE sofort gesendet werden kann.
+        this._loginFailed = false;
         fyta.login()
           .then((success) => {
             if (!success) {
               log.warn('FYTA Login nach Konfigurationsaenderung fehlgeschlagen.');
+              this._loginFailed = true;
+              this._sendPluginReady();
               return;
             }
             this._config = configStore.load();
+            this._sendPluginReady(); // CONFIG_REQUIRED > READY
             log.info('FYTA Zugangsdaten aktualisiert und Login erfolgreich – starte Sync ...');
             return fyta.syncPlants();
           })

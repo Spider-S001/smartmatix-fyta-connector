@@ -24,16 +24,16 @@ ENTRYPOINT ["node", "src/index.js", "de.smartmatix.plugin.fyta-connector", "host
 #  Plugin-Metadaten (PFLICHT für die HCU – exakt dieses Label-Format)
 #
 #  pluginId      muss identisch mit der ENTRYPOINT-Plugin-ID sein
-#  hcuMinVersion mindestens 1.6.16 für Connect API 1.0.1
-#  scope         LOCAL = nur im lokalen Netzwerk
+#  hcuMinVersion mindestens 1.7.9 (Connect API 1.0.1, CONFIG_REQUIRED-Status)
+#  scope         CLOUD = Plugin benötigt Internetzugriff (FYTA-Web-API)
 # ---------------------------------------------------------------------------
 LABEL de.eq3.hmip.plugin.metadata='\
 {\
   "pluginId": "de.smartmatix.plugin.fyta-connector",\
   "issuer": "Kevin Schipper",\
-  "version": "1.1.0",\
-  "hcuMinVersion": "1.6.16",\
-  "scope": "LOCAL",\
+  "version": "1.1.1",\
+  "hcuMinVersion": "1.7.9",\
+  "scope": "CLOUD",\
   "friendlyName": {\
     "en": "SmartMatix FYTA Connector",\
     "de": "SmartMatix FYTA Connector"\

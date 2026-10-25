@@ -1,6 +1,6 @@
 {
   "name": "smartmatix-fyta-connector",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Ein Plugin, um deine FYTA Geräte zur HCU hinzuzufügen.",
   "main": "src/index.js",
   "scripts": {
@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "fs": "^0.0.1-security",
-    "uuid": "^11.1.0",
-    "ws": "^8.19.0"
+    "uuid": "^11.1.1",
+    "ws": "^8.22.0"
   }
 }

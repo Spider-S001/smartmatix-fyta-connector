@@ -42,7 +42,7 @@ So sind deine Pflanzen immer optimal versorgt und du sparst gleichzeitig auch no
 | Voraussetzung | Version |
 |---|---|
 | Node.js | ≥ 18 |
-| HCU-Firmware | ≥ 1.5.16 |
+| HCU-Firmware | ≥ 1.7.9 |
 | FYTA-Konto | vorhanden (web.fyta.de) |
 | Entwicklermodus | aktiviert (HCUWeb) |
 
@@ -73,6 +73,7 @@ smartmatix-fyta-connector/
     ├── devicesStore.js               ← Persistenz für Geräte & FYTA-Daten
     ├── configStore.js                ← Persistenz für Konfiguration
     ├── localization.js               ← Übersetzungen des Plugins ausgeben
+    ├── backup-plugin-data.js         ← Backup & Wiederherstellung der /data-Dateien
     └── logger.js                     ← Konsolenlogger
 ```
 
@@ -188,19 +189,19 @@ LOG_LEVEL=debug node src/index.js de.smartmatix.plugin.fyta-connector hcu1-XXXX.
 Das Plugin läuft auf der HCU in einem ARM64-Container. Zum Bauen auf einem x86-Rechner wird Docker Buildx benötigt:
 
 ```bash
-docker buildx build --platform linux/arm64 -t smartmatix-fyta-connector:1.0.0 .
+docker buildx build --platform linux/arm64 -t smartmatix-fyta-connector:1.1.1 .
 ```
 
 ### 2. Image exportieren
 
 ```bash
-docker save smartmatix-fyta-connector:1.0.0 | gzip > smartmatix-fyta-connector-1.0.0.tar.gz
+docker save smartmatix-fyta-connector:1.1.1 | gzip > smartmatix-fyta-connector-1.1.1.tar.gz
 ```
 
 ### Unter Windows (anschließend mit 7zip zu .tar.gz konvertieren)
 
 ```bash
-docker save smartmatix-fyta-connector:1.0.0 -o smartmatix-fyta-connector-1.0.0.tar
+docker save smartmatix-fyta-connector:1.1.1 -o smartmatix-fyta-connector-1.1.1.tar
 ```
 
 ### 3. Plugin auf der HCU installieren
@@ -219,14 +220,16 @@ Plugin                                    HCU
   │── WebSocket (wss://<host>:9001) ──────►│
   │   Header: authtoken, plugin-id         │
   │                                        │
-  │── PLUGIN_STATE_RESPONSE { READY } ────►│  (sofort beim Verbindungsaufbau)
+  │── PLUGIN_STATE_RESPONSE ──────────────►│  (sofort beim Verbindungsaufbau)
+  │   READY            = FYTA-Zugangsdaten vorhanden
+  │   CONFIG_REQUIRED  = Zugangsdaten fehlen / Login fehlgeschlagen
   │── STATUS_EVENT (alle Geräte) ─────────►│  (gespeicherte Zustände wiederherstellen)
   │                                        │
   │   [FYTA API Login & Sync] ────────────►│  (FYTA-Daten holen, Geräte aktualisieren)
   │── STATUS_EVENT (je Pflanze) ───────────►│  (aktuelle Messwerte)
   │                                        │
   │◄── PLUGIN_STATE_REQUEST ───────────────│  (periodisch)
-  │── PLUGIN_STATE_RESPONSE { READY } ────►│
+  │── PLUGIN_STATE_RESPONSE ──────────────►│  (READY oder CONFIG_REQUIRED)
   │                                        │
   │◄── DISCOVER_REQUEST ───────────────────│  (HCU sucht Geräte)
   │── DISCOVER_RESPONSE ──────────────────►│  (Climate-Sensor-Geräteliste)
@@ -236,6 +239,7 @@ Plugin                                    HCU
   │                                        │
   │◄── CONFIG_UPDATE_REQUEST ──────────────│  (Nutzer speichert Einstellungen)
   │── CONFIG_UPDATE_RESPONSE ─────────────►│
+  │── PLUGIN_STATE_RESPONSE ──────────────►│  (CONFIG_REQUIRED → READY nach erfolgreichem FYTA-Login)
   │── DISCOVER_RESPONSE ──────────────────►│  (wenn neue Geräte erstellt wurden)
   │                                        │
   │   [alle N Minuten] ────────────────────│
