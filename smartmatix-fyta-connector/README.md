@@ -189,19 +189,19 @@ LOG_LEVEL=debug node src/index.js de.smartmatix.plugin.fyta-connector hcu1-XXXX.
 Das Plugin läuft auf der HCU in einem ARM64-Container. Zum Bauen auf einem x86-Rechner wird Docker Buildx benötigt:
 
 ```bash
-docker buildx build --platform linux/arm64 -t smartmatix-fyta-connector:1.1.1 .
+docker buildx build --platform linux/arm64 -t smartmatix-fyta-connector:1.1.2 .
 ```
 
 ### 2. Image exportieren
 
 ```bash
-docker save smartmatix-fyta-connector:1.1.1 | gzip > smartmatix-fyta-connector-1.1.1.tar.gz
+docker save smartmatix-fyta-connector:1.1.2 | gzip > smartmatix-fyta-connector-1.1.2.tar.gz
 ```
 
 ### Unter Windows (anschließend mit 7zip zu .tar.gz konvertieren)
 
 ```bash
-docker save smartmatix-fyta-connector:1.1.1 -o smartmatix-fyta-connector-1.1.1.tar
+docker save smartmatix-fyta-connector:1.1.2 -o smartmatix-fyta-connector-1.1.2.tar
 ```
 
 ### 3. Plugin auf der HCU installieren

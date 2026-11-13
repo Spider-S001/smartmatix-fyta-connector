@@ -609,7 +609,7 @@ class Plugin {
       groups[`fyta_${num}`] = {
         friendlyName: name,
         description:  desc,
-        order:        2 + i,
+        order:        3 + i, // 1 = Allgemein, 2 = Backup & Restore
       };
     });
 
@@ -646,7 +646,7 @@ class Plugin {
     groups.backup_restore = {
       friendlyName: t(lang, 'group.backup_restore.name'),
       description:  combinedDesc,
-      order:        997,
+      order:        2,
     };
 
     return groups;
